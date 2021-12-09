@@ -95,16 +95,16 @@ async def name(ctx, arg):
 @bot.command()
 async def bothelp(ctx):
     embed = discord.Embed(title="Commands",
-                          color=discord.Colour.from_rgb(255, 192, 203))
+                          color=discord.Colour.from_rgb(88, 101, 242))
     embed.add_field(
         name="Timer",
         value=
-        "**setup** [no parameters] *must be done once added to server* \n**start** [no parameters] \n**set** [work time (in minutes)] [break time (in minutes)] [number of cycles]",
+        "`$setup` must be done once added to server \n`$start` starts timer with either default or custom settings \n`$set [work time in minutes] [break time in minutes] [number of cycles]` allows user to set custom times",
         inline=True)
     embed.add_field(
         name="Tasks",
         value=
-        "**view** [no parameters] \n**add** [name of task] \n**remove** [name of task]"
+        "`$view` displays list of current tasks\n`$add [name of task]` adds task to current list of tasks\n`$remove [name of task]` removes task from current list of tasks"
     )
     await ctx.send(embed=embed)
 
@@ -116,43 +116,73 @@ async def gettime(ctx):
 
 @bot.command()
 async def start(ctx):
-    await ctx.send("Clock start: Start working!")
-    await ctx.send(getTime())
+    startEmbed = discord.Embed(title="Clock start: Start working!",
+                          color=discord.Colour.from_rgb(88, 101, 242))
+    startEmbed.add_field(
+        name="The time right now is:",
+        value=getTime(),
+        inline=True)
+    await ctx.send(embed=startEmbed)
     user = findUser(ctx.author.name)
     for i in range(user.numCycles):
         time.sleep(user.workTime)
-        await ctx.send(ctx.author.mention + " " + random.choice(breakList))
-        await ctx.send(getTime())
+        breakTimeEmbed = discord.Embed(title="Break time!", color=discord.Colour.from_rgb(88, 101, 242))
+        breakTimeEmbed.add_field(
+        name=random.choice(breakList),
+        value="The time right now is " + str(getTime()),
+        inline=True)
+        await ctx.send(ctx.author.mention)
+        await ctx.send(embed=breakTimeEmbed)
+        workTimeEmbed = discord.Embed(title="Work time!", color=discord.Colour.from_rgb(88, 101, 242))
+        workTimeEmbed.add_field(
+        name=random.choice(workList),
+        value="The time right now is " + str(getTime()),
+        inline=True)
         if (i % 3 == 0):
             time.sleep(user.breakTime * 3)
-            await ctx.send(ctx.author.mention + " " + random.choice(workList))
-            await ctx.send(getTime())
+            await ctx.send(ctx.author.mention)
+            await ctx.send(embed=workTimeEmbed)
         else:
             time.sleep(user.breakTime)
-            await ctx.send(ctx.author.mention + " " + random.choice(workList))
-            await ctx.send(getTime())
+            await ctx.send(ctx.author.mention)
+            await ctx.send(embed=workTimeEmbed)
 
 
 @bot.command()
 async def set(ctx, workTime, breakTime, numCycles):
-    await ctx.send("Clock start: Start working!")
-    await ctx.send(getTime())
+    startEmbed = discord.Embed(title="Clock start: Start working!",
+                          color=discord.Colour.from_rgb(88, 101, 242))
+    startEmbed.add_field(
+        name="The time right now is:",
+        value=getTime(),
+        inline=True)
+    await ctx.send(embed=startEmbed)
     user = findUser(ctx.author.name)
     user.changeWorkTime(workTime)
     user.changeBreakTime(breakTime)
     user.changeCycles(numCycles)
     for i in range(user.numCycles):
         time.sleep(user.workTime)
-        await ctx.send(ctx.author.mention + " " + random.choice(breakList))
-        await ctx.send(getTime())
+        breakTimeEmbed = discord.Embed(title="Break time!", color=discord.Colour.from_rgb(88, 101, 242))
+        breakTimeEmbed.add_field(
+        name=random.choice(breakList),
+        value="The time right now is " + str(getTime()),
+        inline=True)
+        await ctx.send(ctx.author.mention)
+        await ctx.send(embed=breakTimeEmbed)
+        workTimeEmbed = discord.Embed(title="Work time!", color=discord.Colour.from_rgb(88, 101, 242))
+        workTimeEmbed.add_field(
+        name=random.choice(workList),
+        value="The time right now is " + str(getTime()),
+        inline=True)
         if (i % 3 == 0 and i != 0):
             time.sleep(user.breakTime * 3)
-            await ctx.send(ctx.author.mention + " " + random.choice(workList))
-            await ctx.send(getTime())
+            await ctx.send(ctx.author.mention)
+            await ctx.send(embed=workTimeEmbed)
         else:
             time.sleep(user.breakTime)
-            await ctx.send(ctx.author.mention + " " + random.choice(workList))
-            await ctx.send(getTime())
+            await ctx.send(ctx.author.mention)
+            await ctx.send(embed=workTimeEmbed)
 
 
 def findUser(name):
@@ -164,7 +194,13 @@ def findUser(name):
 @bot.command()
 async def view(ctx):
     user = findUser(ctx.author.name)
-    await ctx.send(user.view())
+    viewEmbed = discord.Embed(title="Here's a list of your tasks!",
+                          color=discord.Colour.from_rgb(88, 101, 242))
+    viewEmbed.add_field(
+        name="Tasks:",
+        value=user.view(),
+        inline=True)
+    await ctx.send(embed=viewEmbed)
     #for i in range(len(user.tasks)):
     #await ctx.send(user.viewTasks())
 
@@ -173,27 +209,49 @@ async def view(ctx):
 async def add(ctx, *, args):
     user = findUser(ctx.author.name)
     user.add(args)
-    await ctx.send("Added successfully!")
-    await ctx.send("Your tasks are: \n" + user.view())
+    viewEmbed = discord.Embed(title="Task added successfully!",
+                          color=discord.Colour.from_rgb(88, 101, 242))
+    viewEmbed.add_field(
+        name="Tasks:",
+        value=user.view(),
+        inline=True)
+    await ctx.send(embed=viewEmbed)
+    #await ctx.send("Added successfully!")
+    #await ctx.send("Your tasks are: \n" + user.view())
 
 
 
 @bot.command()
 async def remove(ctx, *, args):
     user = findUser(ctx.author.name)
-    await ctx.send(str(user.remove(args)) + ' removed')
-    await ctx.send("Your tasks are: \n" + user.view())
+    user.remove(args)
+    viewEmbed = discord.Embed(title="Task removed successfully!",
+                          color=discord.Colour.from_rgb(88, 101, 242))
+    viewEmbed.add_field(
+        name="Tasks:",
+        value=user.view(),
+        inline=True)
+    await ctx.send(embed=viewEmbed)
 
 
 @bot.command()
 async def setup(ctx):
     guild = ctx.guild
+    userListText=""
     async for user in guild.fetch_members():
-        await ctx.send(user)
         print(user.name)
         name = str(user.name)
         x = User(name)
         userList.append(x)
+        userListText+=name
+        userListText+="\n"
+    embed = discord.Embed(title="Setup complete!",
+                          color=discord.Colour.from_rgb(88, 101, 242))
+    embed.add_field(
+        name="Created profiles for:",
+        value=userListText,
+        inline=True)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
